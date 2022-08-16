@@ -24,18 +24,19 @@ import torch.optim as optim
 from Model.NATAL_Concat_All_ht import KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3
 from Utilities.Create_ModelReadyData_Funcs import model_data_for_5X, create_balanced_batch
 from Utilities.Performance_Funcs import plot_LOSS
-from Utilities.Training_Util import BCE_WithRegularization_EmbDist,removeTrain_bytSNE
+from Utilities.Training_Util import BCE_WithRegularization_EmbDist
 
-###For GPU
-#device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
-#print(device)
-torch.manual_seed(1)
+##For GPU
+device = torch.device("cuda:3" if torch.cuda.is_available() else "cpu")
+print(device)
+
     
 
 
 #####################################################################################
 #Data Dir
 #####################################################################################
+torch.manual_seed(1)
 CURR_DIR = os.path.dirname(os.path.abspath("./"))
 
 #Input dir
@@ -91,8 +92,6 @@ rel_emb  = torch.FloatTensor(hf_onto.get('rel_emb'))
 #Compute emb distance from each concept to target
 emb_dist1 = (other_emb - target_emb)**2
 emb_dist2 = torch.sqrt(torch.sum(emb_dist1,dim=0))
-#norm max-min
-#emb_dist_normed = (emb_dist2 - min(emb_dist2))/(max(emb_dist2) - min(emb_dist2))
 #norm softmax
 m = nn.Softmax(dim=0)
 emb_dist_normed = m(emb_dist2)
@@ -105,7 +104,9 @@ train_data = model_data_for_5X(train_X1,train_X2,train_X3,train_X4,train_X6,trai
 test_data  = model_data_for_5X(test_X1,test_X2,test_X3,test_X4,test_X6,test_y)  #all test data
 valid_data  = model_data_for_5X(valid_X1,valid_X2,valid_X3,valid_X4,valid_X6,valid_y)  #all valid data
 
+####################################################
 #Train model
+####################################################
 drop_out_flag = True
 drop_out_rate = 0.2
 EPOCHS = 100
@@ -128,34 +129,23 @@ train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=Tru
 
 #Construct model
 model = KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(N_FEATURE,D_HIDDEN,N_STATIC, N_ONTOLOGY,D_TransE,drop_out_rate)
-#model.to(device)
+model.to(device)
 
-#Optimizer and LOSS function
-#criterion = nn.BCELoss()
-#optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+#Optimizer
 optimizer = optim.SGD(model.parameters(), lr=LEARNING_RATE, momentum=0.9)
 
 #train:
 train_loss = []
 valid_loss = []
 for epoch in range(EPOCHS):
-    #training #paramter updates using each batch(iteration = total sample/batch_size)
     for x1,x2,x3,x4,x5,y in train_loader:
-    #for bc in train_loader:
-        #x1 = bc.x1
-        #x2 = bc.x2
-        #x3 = bc.x3
-        #x4 = bc.x4
-        #x5 = bc.x5
-        #y = bc.y
         #zero the parameter gradients
         optimizer.zero_grad()
         #forward 
         yhat,learned_dist,_ = model(x1,x2,x3,x4,x5,emb_dist_normed,other_emb,target_emb,rel_emb, drop_out_flag = drop_out_flag)
         loss = BCE_WithRegularization_EmbDist(yhat, y,learned_dist,emb_dist_normed, reg_lambbda, 'None',  model, class_weight) #loss with regularization
-        #loss = criterion(yhat, y) #compute loss
         #backward
-        loss.backward()           #compute gradiant
+        loss.backward()           
         #optimize
         optimizer.step()
         
@@ -163,7 +153,6 @@ for epoch in range(EPOCHS):
     #compute loss after one epoch for train and test
     #For all Training data
     pred, learned_dist,_ = model(train_data.x1,train_data.x2,train_data.x3,train_data.x4,train_data.x5,emb_dist_normed, other_emb,target_emb,rel_emb,drop_out_flag= False)
-    #curr_trainloss = criterion(pred, train_data.y)
     curr_trainloss = BCE_WithRegularization_EmbDist(pred, train_data.y,learned_dist,emb_dist_normed, reg_lambbda,'None' ,model, [1,1]) #loss with regularization
 
     train_loss.append(round(curr_trainloss.item(),6))
@@ -171,7 +160,6 @@ for epoch in range(EPOCHS):
     #For all validation data
     with torch.no_grad():
         pred,learned_dist,_ = model(valid_data.x1,valid_data.x2,valid_data.x3,valid_data.x4,valid_data.x5,emb_dist_normed, other_emb,target_emb,rel_emb,drop_out_flag= False)
-        #curr_testloss = criterion(pred, test_data.y)
         curr_validloss = BCE_WithRegularization_EmbDist(pred, valid_data.y,learned_dist,emb_dist_normed,reg_lambbda,'None' ,model, [1,1]) #loss with regularization
         valid_loss.append(round(curr_validloss.item(),6))
     
@@ -187,9 +175,9 @@ plot_LOSS(train_loss,valid_loss, out_dir)
 loss_df = pd.DataFrame({'EPOCH': list(range(EPOCHS)),'train_loss': train_loss, 'valid_loss': valid_loss})
 loss_df.to_csv(out_dir + "losses.csv")
 
-#########################################################
-#Prediction using best model and last model
-#########################################################
+####################################################
+#Testing model
+####################################################
 #loss_df = pd.read_csv(out_dir + "losses.csv")
 minloss_model_index = int(loss_df[loss_df['valid_loss'] == min(loss_df['valid_loss'])].iloc[0]['EPOCH']) #if multiple, choose the first one
 
