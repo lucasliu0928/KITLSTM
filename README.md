@@ -4,9 +4,9 @@
 
 * [General info](#general-info)
 * [Setup](#setup)
-* [Code Sections](#Code-sections)
-* [Code Examples](#Code-sections)
-* [Hyperparameters](#hyper)
+* [Code Sections](#Code-Sections)
+* [Code Examples](#Code-Examples)
+* [Hyperparameters](#Hyperparameters)
 * [Status](#status)
 * [Contact](#contact)
  
