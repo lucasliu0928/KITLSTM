@@ -4,6 +4,7 @@
 
 * [General info](#general-info)
 * [Setup](#setup)
+* [Original Data](#Original-Data)
 * [Code Sections](#Code-Sections)
 * [Code Examples](#Code-Examples)
 * [Hyperparameters](#Hyperparameters)
@@ -16,7 +17,7 @@
 - Python 3.7
 - Pytorch 1.7.1
 
-##Original Data
+## Original Data
 User can request the real-world data through UK CCTS (University of Kentucky, Center for Clinical and Translational Science) with approved IRB.
 
 ## Code Sections
