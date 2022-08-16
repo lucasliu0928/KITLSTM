@@ -16,6 +16,8 @@
 - Python 3.7
 - Pytorch 1.7.1
 
+##Original Data
+User can request the real-world data through UK CCTS (University of Kentucky, Center for Clinical and Translational Science) with approved IRB.
 
 ## Code Sections
 ## Code Examples
