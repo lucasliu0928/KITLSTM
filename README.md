@@ -13,9 +13,9 @@
 ## General info
 
 ## Setup
-Python 3.7
-Pytorch 1.7.1
-Describe how to install / setup your local environement / add link to demo version.
+- Python 3.7
+- Pytorch 1.7.1
+
 
 ## Code Sections
 ## Code Examples
