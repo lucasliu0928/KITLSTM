@@ -5,8 +5,6 @@
 * [General info](#general-info)
 * [Setup](#setup)
 * [Original Data](#Original-Data)
-* [Code Sections](#Code-Sections)
-* [Code Examples](#Code-Examples)
 * [Hyperparameters](#Hyperparameters)
 * [Status](#status)
 * [Contact](#contact)
@@ -19,9 +17,6 @@
 
 ## Original Data
 User can request the real-world data through UK CCTS (University of Kentucky, Center for Clinical and Translational Science) with approved IRB.
-
-## Code Sections
-## Code Examples
 
 ## Hyperparameters
 We choose the hyperparameters that delivered the best performance for the validation set by doing random search for all methods.
