@@ -1,8 +1,4 @@
 #  KIT-LSTM:
-This is the official repository of "L. Liu, V. Ortiz-Soriano, J. Neyra and J. Chen, "KIT-LSTM: Knowledge-guided Time-aware LSTM for Continuous Clinical Risk Prediction," in 2022 IEEE International Conference on Bioinformatics and Biomedicine (BIBM), Las Vegas, NV, USA, 2022 pp. 1086-1091.". Link: https://www.computer.org/csdl/proceedings-article/bibm/2022/09994931/1JC2nGMB5PW
-
-For additional experimental results, please see our medRxiv paper link at: https://www.medrxiv.org/content/10.1101/2022.11.14.22282332v1
-
 ## Table of contents
 
 * [General info](#general-info)
@@ -13,6 +9,9 @@ For additional experimental results, please see our medRxiv paper link at: https
 * [Contact](#contact)
  
 ## General info
+This is the official repository of "L. Liu, V. Ortiz-Soriano, J. Neyra and J. Chen, "KIT-LSTM: Knowledge-guided Time-aware LSTM for Continuous Clinical Risk Prediction," in 2022 IEEE International Conference on Bioinformatics and Biomedicine (BIBM), Las Vegas, NV, USA, 2022 pp. 1086-1091.". Link: https://www.computer.org/csdl/proceedings-article/bibm/2022/09994931/1JC2nGMB5PW
+
+For additional experimental results, please see our medRxiv paper link at: https://www.medrxiv.org/content/10.1101/2022.11.14.22282332v1
 
 ## Setup
 - Python 3.7
