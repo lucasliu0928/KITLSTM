@@ -68,13 +68,6 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
         self.b_pc = nn.Parameter(torch.Tensor(hidden_size, 1))  #KG candidate memory 
         
         #Ontology feature mapping 
-        #self.W_ont = nn.Parameter(torch.Tensor(1, transE_D_size))  
-        #self.b_ont = nn.Parameter(torch.Tensor(1, ontology_size))  
-                
-        #Attenton parameters
-        #self.W_a = nn.Parameter(torch.Tensor(hidden_size, transE_D_size)) #KG Attention
-        #self.W_b = nn.Parameter(torch.Tensor(hidden_size, transE_D_size)) #KG Attention
-        #self.W_r = nn.Parameter(torch.Tensor(hidden_size, transE_D_size)) #KG Attention
         self.softmax =  nn.Softmax(dim=0)
         self.W_k = nn.Parameter(torch.Tensor(hidden_size, ontology_size)) #KG Attention
         self.b_k = nn.Parameter(torch.Tensor(hidden_size, 1)) #KG Attention
@@ -87,17 +80,12 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
         
         #Embedding layer for concept
         self.embedding = nn.Embedding(ontology_size + 1, 1) #n_num = n_ontoloty + n_target, output dim = 1
-        
-        #embedding layer for relation
-        #self.embedding2 = nn.Embedding(ontology_size, 1) #n_ontoloty, output dim =1
 
         self.initial_weights() #Call initial weight method
 
         #softmax for dist norm
         self.norm = nn.Softmax(dim=0)
                 
-        #add a bn layer
-        #self.BN = nn.BatchNorm1d(hidden_size)
     def initial_weights(self):
         stdv = 1.0 / math.sqrt(self.hidden_size)
         for weight in self.parameters():
@@ -124,21 +112,14 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
         #Target concept
         ont_target_emb = ont_emb[-1]              #[1 x 1] 
 
-        #4.Relatino embeddings
-        #rel_concepts = torch.LongTensor([0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19])    #input index of 20 ontology relations to the target
-        #ont_rel_emb = self.embedding2(rel_concepts) #[n_ontology x 1] 
 
         #5.conpute distantce between other embs to target
         ont_dist = torch.sqrt((ont_ent_emb - ont_target_emb)**2)      #[n_ontology x 1] 
         ont_dist_normed = self.norm(ont_dist)
         
-        #conpute distance between concept embed + relation embed and target embed
-        #ont_dist = torch.sqrt((ont_target_emb - (ont_ent_emb + rel_emb))**2)
-        #ont_dist_normed = self.norm(ont_dist)
 
         #repeat embeddings for every pts
         ont_ent_emb = torch.cat(bs*[ont_ent_emb],1)          #[n_ontology x batch_size] 
-        #ont_rel_emb = torch.cat(bs*[ont_rel_emb],1)          #[n_ontology x batch_size] 
 
         
 
@@ -153,12 +134,6 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
             delta_t3 = torch.transpose(delta3_x[:,t,:],0,1)         #[1 x batch_size] 
             delta_t3 = torch.cat(self.hidden_size*[delta_t3],0)     #[n_hidden x batch_size] #repeat for each dim
            
-            #Use concept distantance as relation
-            #ont_rel_emb = torch.transpose(torch.cat(bs*[concept_dist],0),0,1) #[n_ontology x batch_size] #repeat for each pt
-            
-            #Available relation at time t
-            #beta_t = ont_rel_emb * p_t                                 #[n_ontology x batch_size]
-            #beta_t = ont_rel_emb * p_t + ont_ent_emb * p_t              #[n_ontology x batch_size]
             beta_t = ont_ent_emb * p_t
 
             
@@ -170,8 +145,8 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
             
             #short-term memory
             cs_t = torch.tanh(self.W_d @ c_t + self.b_d) #[n_hidden x batch_size] 
+            
             #Time aware gate
-            #NOTE: if use 1/delta_t, the model predicts NAN
             g_t =  torch.sigmoid(self.W_g @ (1/torch.sigmoid(delta_t)) + self.b_g) #[n_hidden x batch_size] 
             g_t2 =  torch.sigmoid(1/delta_t3) # use sigmoid to avoid inf #[n_hidden x batch_size] 
 
@@ -193,11 +168,8 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
             o_t = torch.sigmoid(self.W_io @ x_t + self.b_io + self.W_ho @ h_t + self.b_ho)         #[n_hidden x batch_size]
             candidate_t = torch.tanh(self.W_ig @ x_t + self.b_ig + self.W_hg @ h_t + self.b_hg)    #[n_hidden x batch_size]
             KG_candidate_t = torch.tanh(self.W_ic @ x_t + self.b_ic + self.W_hc @ h_t + self.b_hc + self.W_pc @ p_t + self.b_pc)    #[n_hidden x batch_size]
-            #KG_candidate_t = torch.tanh(self.W_pc @ p_t + self.b_pc + self.W_hc @ h_t + self.b_hc)    #[n_hidden x batch_size]
 
-            #c_t = f_t * c_star + k_t * i_t * candidate_t   #(n_hidden x batch_size)
             c_t = f_t * c_star + i_t * candidate_t +  k_t * KG_candidate_t   #(n_hidden x batch_size)
-            #c_t = f_t * c_star + i_t * candidate_t + i_t * k_t    #current best #(n_hidden x batch_size) 
 
             h_t = o_t * torch.tanh(c_t)                              #(n_hidden x batch_size)
 
@@ -209,7 +181,6 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
 
         #directly sum over time steps
         h_t_all = torch.sum(h_t_all, dim=1) #Sum over all time steps for each hidden (n_hidden x batch_size)
-        #h_t_all = torch.max(h_t_all, dim=1)[0] #MAx over all time steps for each hidden (n_hidden x batch_size)
 
         #Concatenate static feature to the last h_t
         static_x = static_x.transpose(0, 1).contiguous() #reshape to [N_STATIC_FEATURE, BATCH_SIZE]
