@@ -11,9 +11,9 @@ import torch
 import torch.nn as nn
 
 
-class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):          
+class KITLSTM_M(nn.Module):          
     def __init__(self, input_size: int, hidden_size: int, static_size: int,ontology_size: int, transE_D_size : int, dropout_v: float): 
-        super(KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3, self).__init__()
+        super(KITLSTM_M, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         
@@ -92,7 +92,10 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
             weight.data.uniform_(-stdv, stdv)
 
     def forward(self, x, delta_x, binary_x, static_x, delta3_x, concept_dist, ont_ent_emb,ont_target_emb,ont_rel_emb,initial_states = None, drop_out_flag = False):
-        #1. Get batch_size, squence_length/time steps (Assume x in shape (batch_size, sequence length/ time_steps, n_features))
+        """
+        x shape: [batch_size, sequence length/time_steps, n_features] 
+        """
+        #1.Get Sizes
         bs, ts, _ = x.size() #batch size, time steps, _
         
         #2.Initial states
@@ -195,8 +198,7 @@ class KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(nn.Module):
         if drop_out_flag :
             out = self.dropout(out)
         
-        #Prediction using the last hidden state h_t
-        #(1 x n_hidden)      x (n_hidden x batch_size) + (1 x 1)
+        #Prediction 
         y = torch.sigmoid(out)
          
         #reshape y
