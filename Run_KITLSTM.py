@@ -21,7 +21,7 @@ import h5py
 from torch.utils.data import DataLoader
 import torch.optim as optim
 
-from Model.NATAL_Concat_All_ht import KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3
+from Model.KITLSTM import KITLSTM_M
 from Utilities.Create_ModelReadyData_Funcs import model_data_for_5X, create_balanced_batch
 from Utilities.Performance_Funcs import plot_LOSS
 from Utilities.Training_Util import BCE_WithRegularization_EmbDist
@@ -120,15 +120,13 @@ reg_lambbda = 0.01
 N_STATIC = 6
 class_weight = [1,8] 
 
-#Genereate balanced batches
-#train_loader = create_balanced_batch(train_X1, train_X4, train_y, 5, BATCH_SIZE, train_X2 ,train_X3,train_X6)
- 
+
 #Non balanced batch
 train_loader = DataLoader(dataset=train_data, batch_size=BATCH_SIZE, shuffle=True)
 
 
 #Construct model
-model = KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(N_FEATURE,D_HIDDEN,N_STATIC, N_ONTOLOGY,D_TransE,drop_out_rate)
+model = KITLSTM_M(N_FEATURE,D_HIDDEN,N_STATIC, N_ONTOLOGY,D_TransE,drop_out_rate)
 model.to(device)
 
 #Optimizer
@@ -178,11 +176,10 @@ loss_df.to_csv(out_dir + "losses.csv")
 ####################################################
 #Testing model
 ####################################################
-#loss_df = pd.read_csv(out_dir + "losses.csv")
 minloss_model_index = int(loss_df[loss_df['valid_loss'] == min(loss_df['valid_loss'])].iloc[0]['EPOCH']) #if multiple, choose the first one
 
 #Instaitate model
-minmodel = KG_TIMEAWARE_LSTM3_WithStaticF_HtConcat_3rdDelta_t_V3(N_FEATURE,D_HIDDEN,N_STATIC, N_ONTOLOGY,D_TransE,drop_out_rate)
+minmodel = KITLSTM_M(N_FEATURE,D_HIDDEN,N_STATIC, N_ONTOLOGY,D_TransE,drop_out_rate)
 
 #Load model with min loss
 minmodel.load_state_dict(torch.load(out_dir + "/saved_model/" + "model" + str(minloss_model_index)))
