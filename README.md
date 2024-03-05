@@ -28,6 +28,6 @@ The resulting hyperparameters for KIT-LSTM in the paper are: the size of hidden 
 Project is: _in progress_ for final cleaning and organizing   
 
 ## Contact
-Created by Lucas J. Liu (jli394@uky.edu) - feel free to contact me!
+Created by Lucas J. Liu (jingliu0912@gmail.com) - feel free to contact me!
 
  
